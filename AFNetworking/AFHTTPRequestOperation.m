@@ -236,12 +236,18 @@ static NSString * AFStringFromIndexSet(NSIndexSet *indexSet) {
         if (self.error) {
             if (failure) {
                 dispatch_async(self.failureCallbackQueue ?: dispatch_get_main_queue(), ^{
+                    if ([self isCancelled]) {
+                        return;
+                    }
                     failure(self, self.error);
                 });
             }
         } else {
             if (success) {
                 dispatch_async(self.successCallbackQueue ?: dispatch_get_main_queue(), ^{
+                    if ([self isCancelled]) {
+                        return;
+                    }
                     success(self, self.responseData);
                 });
             }

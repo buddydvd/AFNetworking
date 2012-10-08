@@ -545,6 +545,10 @@ totalBytesExpectedToWrite:(NSInteger)totalBytesExpectedToWrite
 {
     if (self.uploadProgress) {
         dispatch_async(dispatch_get_main_queue(), ^{
+            if ([self isCancelled]) {
+                return;
+            }
+
             self.uploadProgress(bytesWritten, totalBytesWritten, totalBytesExpectedToWrite);
         });
     }
@@ -570,6 +574,10 @@ didReceiveResponse:(NSURLResponse *)response
     
     if (self.downloadProgress) {
         dispatch_async(dispatch_get_main_queue(), ^{
+            if (self.isCancelled) {
+                return;
+            }
+
             self.downloadProgress([data length], self.totalBytesRead, self.response.expectedContentLength);
         });
     }

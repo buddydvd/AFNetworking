@@ -76,13 +76,22 @@ static dispatch_queue_t image_request_operation_processing_queue() {
 {
     AFImageRequestOperation *requestOperation = [[[AFImageRequestOperation alloc] initWithRequest:urlRequest] autorelease];
     [requestOperation setCompletionBlockWithSuccess:^(AFHTTPRequestOperation *operation, id responseObject) {
+        if ([operation isCancelled]) {
+            return;
+        }
         if (success) {
             UIImage *image = responseObject;
             if (imageProcessingBlock) {
                 dispatch_async(image_request_operation_processing_queue(), ^(void) {
+                    if ([operation isCancelled]) {
+                        return;
+                    }
                     UIImage *processedImage = imageProcessingBlock(image);
 
                     dispatch_async(operation.successCallbackQueue ? operation.successCallbackQueue : dispatch_get_main_queue(), ^(void) {
+                        if ([operation isCancelled]) {
+                            return;
+                        }
                         success(operation.request, operation.response, processedImage);
                     });
                 });
@@ -91,6 +100,9 @@ static dispatch_queue_t image_request_operation_processing_queue() {
             }
         }
     } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
+        if ([operation isCancelled]) {
+            return;
+        }
         if (failure) {
             failure(operation.request, operation.response, error);
         }
@@ -111,9 +123,15 @@ static dispatch_queue_t image_request_operation_processing_queue() {
             NSImage *image = responseObject;
             if (imageProcessingBlock) {
                 dispatch_async(image_request_operation_processing_queue(), ^(void) {
+                    if ([operation isCancelled]) {
+                        return;
+                    }
                     NSImage *processedImage = imageProcessingBlock(image);
 
                     dispatch_async(operation.successCallbackQueue ? operation.successCallbackQueue : dispatch_get_main_queue(), ^(void) {
+                        if ([operation isCancelled]) {
+                            return;
+                        }
                         success(operation.request, operation.response, processedImage);
                     });
                 });
@@ -211,9 +229,17 @@ static dispatch_queue_t image_request_operation_processing_queue() {
         }
         
         dispatch_async(image_request_operation_processing_queue(), ^(void) {
+            if ([self isCancelled]) {
+                return;
+            }
+
             if (self.error) {
                 if (failure) {
                     dispatch_async(self.failureCallbackQueue ? self.failureCallbackQueue : dispatch_get_main_queue(), ^{
+                        if ([self isCancelled]) {
+                            return;
+                        }
+
                         failure(self, self.error);
                     });
                 }
@@ -228,6 +254,10 @@ static dispatch_queue_t image_request_operation_processing_queue() {
                     image = self.responseImage;
 
                     dispatch_async(self.successCallbackQueue ? self.successCallbackQueue : dispatch_get_main_queue(), ^{
+                        if ([self isCancelled]) {
+                            return;
+                        }
+
                         success(self, image);
                     });
                 }
