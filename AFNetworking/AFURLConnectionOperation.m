@@ -190,21 +190,20 @@ static inline BOOL AFStateTransitionIsValid(AFOperationState fromState, AFOperat
 }
 
 - (void)dealloc {
-    [_lock release];
-        
-    [_runLoopModes release];
+    self.lock = nil;
+
+    self.runLoopModes = nil;
+
+    self.request = nil;
+    self.response = nil;
+    self.error = nil;
+
+    self.responseData = nil;
+    self.responseString = nil;
     
-    [_request release];
-    [_response release];
-    [_error release];
-    
-    [_responseData release];
-    [_responseString release];
-    
-    if (_outputStream) {
-        [_outputStream close];
-        [_outputStream release];
-        _outputStream = nil;
+    if (self.outputStream) {
+        [self.outputStream close];
+        self.outputStream = nil;
     }
 
 #if __IPHONE_OS_VERSION_MIN_REQUIRED
@@ -213,15 +212,15 @@ static inline BOOL AFStateTransitionIsValid(AFOperationState fromState, AFOperat
         _backgroundTaskIdentifier = UIBackgroundTaskInvalid;
     }
 #endif
-    	
-    [_uploadProgress release];
-    [_downloadProgress release];
-    [_authenticationChallenge release];
-    [_authenticationAgainstProtectionSpace release];
-    [_cacheResponse release];
-    [_redirectResponse release];
-    
-    [_connection release];
+
+    self.uploadProgress = nil;
+    self.downloadProgress = nil;
+    self.authenticationChallenge = nil;
+    self.authenticationAgainstProtectionSpace = nil;
+    self.cacheResponse = nil;
+    self.redirectResponse = nil;
+
+    self.connection = nil;
     
     [super dealloc];
 }
