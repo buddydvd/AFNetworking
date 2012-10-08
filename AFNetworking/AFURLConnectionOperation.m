@@ -220,6 +220,7 @@ static inline BOOL AFStateTransitionIsValid(AFOperationState fromState, AFOperat
     self.cacheResponse = nil;
     self.redirectResponse = nil;
 
+    [self.connection cancel];
     self.connection = nil;
     
     [super dealloc];
@@ -422,6 +423,7 @@ static inline BOOL AFStateTransitionIsValid(AFOperationState fromState, AFOperat
     if ([self isCancelled]) {
         [self finish];
     } else {
+        [self.connection cancel];
         self.connection = [[[NSURLConnection alloc] initWithRequest:self.request delegate:self startImmediately:NO] autorelease];
         
         NSRunLoop *runLoop = [NSRunLoop currentRunLoop];
@@ -579,6 +581,7 @@ didReceiveResponse:(NSURLResponse *)response
     
     [self finish];
 
+    [self.connection cancel];
     self.connection = nil;
 }
 
@@ -591,6 +594,7 @@ didReceiveResponse:(NSURLResponse *)response
     
     [self finish];
 
+    [self.connection cancel];
     self.connection = nil;
 }
 
