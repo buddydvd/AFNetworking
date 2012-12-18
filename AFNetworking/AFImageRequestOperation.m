@@ -233,14 +233,25 @@ static dispatch_queue_t image_request_operation_processing_queue() {
                 return;
             }
 
-            if (self.error) {
+            NSError *error = self.error;
+
+            if (!self.responseImage) {
+                NSMutableDictionary *userInfo = [NSMutableDictionary dictionary];
+                [userInfo setValue:[self.request URL] forKey:NSURLErrorFailingURLErrorKey];
+                [userInfo setValue:self.request forKey:AFNetworkingOperationFailingURLRequestErrorKey];
+                [userInfo setValue:self.response forKey:AFNetworkingOperationFailingURLResponseErrorKey];
+                [userInfo setValue:@"No image data" forKey:NSLocalizedDescriptionKey];
+                error = [[[NSError alloc] initWithDomain:AFNetworkingErrorDomain code:NSURLErrorZeroByteResource userInfo:userInfo] autorelease];
+            }
+
+            if (error) {
                 if (failure) {
                     dispatch_async(self.failureCallbackQueue ? self.failureCallbackQueue : dispatch_get_main_queue(), ^{
                         if ([self isCancelled]) {
                             return;
                         }
 
-                        failure(self, self.error);
+                        failure(self, error);
                     });
                 }
             } else {            
