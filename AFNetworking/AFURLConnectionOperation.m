@@ -567,10 +567,14 @@ willSendRequestForAuthenticationChallenge:(NSURLAuthenticationChallenge *)challe
                 break;
             }
             case AFSSLPinningModeCertificate: {
-                SecCertificateRef certificate = SecTrustGetCertificateAtIndex(serverTrust, 0);
-                NSData *certificateData = (__bridge_transfer NSData *)SecCertificateCopyData(certificate);
-                if ([[[self class] pinnedCertificates] containsObject:certificateData]) {
-                    credential = [NSURLCredential credentialForTrust:serverTrust];
+                NSInteger certificateCount = (NSInteger)SecTrustGetCertificateCount(serverTrust);
+                for (NSInteger i = 0; i < certificateCount; i++) {
+                    SecCertificateRef certificate = SecTrustGetCertificateAtIndex(serverTrust, (CFIndex)i);
+                    NSData *certificateData = (__bridge_transfer NSData *)SecCertificateCopyData(certificate);
+                    if ([[[self class] pinnedCertificates] containsObject:certificateData]) {
+                        credential = [NSURLCredential credentialForTrust:serverTrust];
+                        break;
+                    }
                 }
                 break;
             }
