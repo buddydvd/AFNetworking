@@ -560,10 +560,20 @@ willSendRequestForAuthenticationChallenge:(NSURLAuthenticationChallenge *)challe
         NSURLCredential *credential = nil;
         switch (self.SSLPinningMode) {
             case AFSSLPinningModePublicKey: {
-                id publicKey = (__bridge_transfer id)SecTrustCopyPublicKey(serverTrust);
-                if ([[self.class pinnedPublicKeys] containsObject:publicKey]) {
-                    credential = [NSURLCredential credentialForTrust:serverTrust];
+                SecPolicyRef policy = SecPolicyCreateBasicX509();
+                NSInteger certificateCount = (NSInteger)SecTrustGetCertificateCount(serverTrust);
+                for (NSInteger i = 0; i < certificateCount; i++) {
+                    SecCertificateRef certificate = SecTrustGetCertificateAtIndex(serverTrust, (CFIndex)i);
+                    SecTrustRef trust = NULL;
+                    SecTrustCreateWithCertificates(certificate, policy, &trust);
+                    id publicKey = (__bridge_transfer id)SecTrustCopyPublicKey(trust);
+                    if ([[self.class pinnedPublicKeys] containsObject:publicKey]) {
+                        credential = [NSURLCredential credentialForTrust:serverTrust];
+                        break;
+                    }
                 }
+                if (policy)
+                    CFRelease(policy);
                 break;
             }
             case AFSSLPinningModeCertificate: {
