@@ -86,6 +86,7 @@
 
 #ifdef _AFNETWORKING_PIN_SSL_CERTIFICATES_
 typedef enum {
+    AFSSLPinningModeDisabled,
     AFSSLPinningModePublicKey,
     AFSSLPinningModeCertificate,
 } AFURLConnectionOperationSSLPinningMode;
@@ -319,9 +320,13 @@ NSCoding, NSCopying>
  The following constants are provided by `AFURLConnectionOperation` as possible SSL Pinning options.
 
  enum {
+ AFSSLPinningModeDisabled,
  AFSSLPinningModePublicKey,
  AFSSLPinningModeCertificate,
  }
+
+ `AFSSLPinningModeDisabled`
+ Disable SSL connection pinning.
 
  `AFSSLPinningModePublicKey`
  Pin SSL connections to certificate public key (SPKI).

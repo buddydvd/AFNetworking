@@ -256,6 +256,10 @@ static inline BOOL AFStateTransitionIsValid(AFOperationState fromState, AFOperat
 
     self.state = AFOperationReadyState;
 
+#ifdef _AFNETWORKING_PIN_SSL_CERTIFICATES_
+    self.SSLPinningMode = AFSSLPinningModePublicKey;
+#endif
+
     return self;
 }
 
@@ -555,7 +559,8 @@ willSendRequestForAuthenticationChallenge:(NSURLAuthenticationChallenge *)challe
     }
 #endif
 #ifdef _AFNETWORKING_PIN_SSL_CERTIFICATES_
-    if ([challenge.protectionSpace.authenticationMethod isEqualToString:NSURLAuthenticationMethodServerTrust]) {
+    if (self.SSLPinningMode != AFSSLPinningModeDisabled &&
+        [challenge.protectionSpace.authenticationMethod isEqualToString:NSURLAuthenticationMethodServerTrust]) {
         SecTrustRef serverTrust = challenge.protectionSpace.serverTrust;
         NSURLCredential *credential = nil;
         switch (self.SSLPinningMode) {
@@ -586,6 +591,9 @@ willSendRequestForAuthenticationChallenge:(NSURLAuthenticationChallenge *)challe
                         break;
                     }
                 }
+                break;
+            }
+            default: {
                 break;
             }
         }
