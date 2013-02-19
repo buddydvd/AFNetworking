@@ -581,7 +581,9 @@ willSendRequestForAuthenticationChallenge:(NSURLAuthenticationChallenge *)challe
                 }
             }
         }
+        return;
     }
+    [[challenge sender] performDefaultHandlingForAuthenticationChallenge:challenge];
 }
 #endif
 
