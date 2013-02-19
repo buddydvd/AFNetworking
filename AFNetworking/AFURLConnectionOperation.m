@@ -31,6 +31,10 @@
 // You can turn on ARC for only AFNetworking files by adding -fobjc-arc to the build phase for each of its files.
 #endif
 
+#if defined(_AFNETWORKING_PIN_SSL_CERTIFICATES_) && !defined(_AFNETWORKING_AVOID_DEPRECATED_AUTHENTICATION_CHALLENGE_DELEGATES_)
+    #define _AFNETWORKING_AVOID_DEPRECATED_AUTHENTICATION_CHALLENGE_DELEGATES_
+#endif
+
 typedef enum {
     AFOperationPausedState      = -1,
     AFOperationReadyState       = 1,
@@ -540,10 +544,11 @@ static inline BOOL AFStateTransitionIsValid(AFOperationState fromState, AFOperat
 
 #pragma mark - NSURLConnectionDelegate
 
-#ifdef _AFNETWORKING_PIN_SSL_CERTIFICATES_
+#ifdef _AFNETWORKING_AVOID_DEPRECATED_AUTHENTICATION_CHALLENGE_DELEGATES_
 - (void)connection:(NSURLConnection *)connection
 willSendRequestForAuthenticationChallenge:(NSURLAuthenticationChallenge *)challenge
 {
+#ifdef _AFNETWORKING_PIN_SSL_CERTIFICATES_
     if ([challenge.protectionSpace.authenticationMethod isEqualToString:NSURLAuthenticationMethodServerTrust]) {
         SecTrustRef serverTrust = challenge.protectionSpace.serverTrust;
         SecCertificateRef certificate = SecTrustGetCertificateAtIndex(serverTrust, 0);
@@ -583,11 +588,13 @@ willSendRequestForAuthenticationChallenge:(NSURLAuthenticationChallenge *)challe
         }
         return;
     }
+#endif
     [[challenge sender] performDefaultHandlingForAuthenticationChallenge:challenge];
 }
 #endif
 
 
+#ifndef _AFNETWORKING_AVOID_DEPRECATED_AUTHENTICATION_CHALLENGE_DELEGATES_
 - (BOOL)connection:(NSURLConnection *)connection
 canAuthenticateAgainstProtectionSpace:(NSURLProtectionSpace *)protectionSpace
 {
@@ -651,6 +658,7 @@ didReceiveAuthenticationChallenge:(NSURLAuthenticationChallenge *)challenge
 - (BOOL)connectionShouldUseCredentialStorage:(NSURLConnection __unused *)connection {
     return self.shouldUseCredentialStorage;
 }
+#endif
 
 - (NSInputStream *)connection:(NSURLConnection __unused *)connection
             needNewBodyStream:(NSURLRequest *)request
